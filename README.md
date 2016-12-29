@@ -8,7 +8,7 @@ Download composer to handle your dependencies for you, including the above libra
 This just means  
 1. Download the "composer.json" and "composer.lock" files from this repository to C:\xampp\htdocs\your_folder  
 2. In your command prompt, change the working directory to the same location.        
-3. Run the command "composer update", which should generate a "vendor" file with libraries.   
+3. Run the command "composer install", which should generate a "vendor" file with libraries.   
 
 #Database
 We're also going to need a SQL database of contacts to import from, so upload your csv file into a database in localhost/phpmyadmin. You'll have to adjust the following lines when you make your sql connection in test.php:  
