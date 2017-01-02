@@ -1,3 +1,11 @@
+<?php
+session_start();
+
+//add ?logout to the end of the url to revoke access token 
+if (isset($_REQUEST['logout'])) {
+  unset($_SESSION['access_token']);
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -10,7 +18,7 @@
   </head>
   <body>
   <p style="font-family: Comic Sans MS"> Hey! You can sync your contacts here, just click this button.</p>
-    <form action="authorise-application.php">
+    <form action="main_page.php">
       <button>Authorize</button>
     </form>
   </body>
