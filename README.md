@@ -10,6 +10,9 @@ This just means
 2. In your command prompt, change the working directory to the same location.        
 3. Run the command "composer install", which should generate a "vendor" file with libraries.   
 
+I've made some modifications to "ContactFactory.php" and "GoogleHelper.php", you will need to replace the files of the same name under 
+C:\xampp\htdocs\...\vendor\rajeshtomjoe\php-google-contacts-v3-api in order to call batchCreate() or createGroup().   
+
 #Database
 We're also going to need a SQL database of contacts to import from, so upload your csv file into a database in localhost/phpmyadmin. You'll have to adjust the following lines when you make your sql connection in test.php:  
 `$mysqli = new mysqli('localhost', 'root', '','rovers');`  
