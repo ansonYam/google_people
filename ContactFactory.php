@@ -244,7 +244,96 @@ abstract class ContactFactory
         return new Contact($contactDetails);
     }
 	
+	public static function batchCreate($contactsArray, $groupId)
+	//batch creates all contacts in the $contactsArray into the group $groupId, returns number created
+    {
+		$numCreated = 0;//counter
+		
+		//build a atom/xml document specifying contact information 
+        $doc = new \DOMDocument();
+        $doc->formatOutput = true;
+        $feed = $doc->createElement('feed');
+        $feed->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:atom', 'http://www.w3.org/2005/Atom');
+        $feed->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:gContact', 'http://schemas.google.com/contact/2008');
+		$feed->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:gd', 'http://schemas.google.com/g/2005');
+		$feed->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:batch', 'http://schemas.google.com/gdata/batch');
+        $doc->appendChild($feed);
+
+		//make entries for each contact in $contactsArray
+		foreach ($contactsArray as $contact){
+			$entry = $doc ->createElement('entry');
+			$feed->appendChild($entry);
+		
+			$id = $doc->createElement('batch:id', 'create'); 
+			$entry->appendChild($id);
+		
+			$operation = $doc->createElement('batch:operation');
+			$operation->setAttribute('type', 'insert');
+			$entry->appendChild($operation);
+		
+			$category = $doc->createElement('category');
+			$category->setAttribute('scheme', 'http://schemas.google.com/g/2005#kind');
+			$category->setAttribute('term', 'http://schemas.google.com/g/2008#contact');
+			$entry->appendChild($category);
+		
+			//set full name 
+			$name = $doc->createElement('gd:name'); 
+			$entry->appendChild($name);
+			$fullName = $doc->createElement('gd:fullName', $contact["Name"]);
+			$name->appendChild($fullName);
+
+			//set eamil
+			$email = $doc->createElement('gd:email');
+			$email->setAttribute('rel', 'http://schemas.google.com/g/2005#work');
+			$email->setAttribute('address', $contact["E-mail 1 - Value"]);
+			$entry->appendChild($email);
+
+			//set mobile phone number 
+			if($contact["Phone 1 - Value"]){
+				$phone = $doc->createElement('gd:phoneNumber', $contact["Phone 1 - Value"]);
+				$phone->setAttribute('rel', 'http://schemas.google.com/g/2005#mobile');
+				$entry->appendChild($phone);
+			}
+			
+			//set home phone number  
+			if($contact["Phone 2 - Value"]){
+				$phone = $doc->createElement('gd:phoneNumber', $contact["Phone 2 - Value"]);
+				$phone->setAttribute('rel', 'http://schemas.google.com/g/2005#home');
+				$entry->appendChild($phone);
+			}
+			
+			//set work phone number 
+			if($contact["Phone 3 - Value"]){
+				$phone = $doc->createElement('gd:phoneNumber', $contact["Phone 3 - Value"]);
+				$phone->setAttribute('rel', 'http://schemas.google.com/g/2005#work');
+				$entry->appendChild($phone);
+			}
+			
+			//set group to $groupId 
+			$group = $doc->createElement('gContact:groupMembershipInfo');
+			$group->setAttribute('deleted', 'false');
+			$group->setAttribute('href', $groupId);  
+			$entry->appendChild($group); 
+			
+			$numCreated = $numCreated + 1;
+		}
+		
+		
+		//save everything that we've written above 
+        $xmlToSend = $doc->saveXML();
+
+		//send http POST request with the above xml to the contacts batch feed url 
+		try{
+			$response = GoogleHelper::getResponse('POST', 'https://www.google.com/m8/feeds/contacts/default/full/batch', $xmlToSend); 
+		}catch(\GuzzleHttp\Exception\ClientException $e){
+			echo ($e->getResponse()->getBody()->getContents());
+			exit;
+		}
+		return $numCreated;
+	}
+	
 	public static function createGroup($groupName)
+	//creates a contact group with the specified $groupName, returns the $groupId ('http://www.google.com/m8/feeds/groups/test@example.com/base/asdfjkl1234) 
     {
         $doc = new \DOMDocument();
         $doc->formatOutput = true;
@@ -253,7 +342,7 @@ abstract class ContactFactory
         $entry->setAttributeNS('http://www.w3.org/2000/xmlns/', 'xmlns:gd', 'http://schemas.google.com/g/2005');
         $doc->appendChild($entry);
 
-        $title = $doc->createElement('title', $groupName);
+        $title = $doc->createElement('atom:title', $groupName);
         $entry->appendChild($title);
 
         $xmlToSend = $doc->saveXML();

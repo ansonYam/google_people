@@ -13,14 +13,20 @@ if (isset($_REQUEST['logout'])) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
-    <title>PHP library for the Google Contacts API (v3)</title>
-
+    <title>:^)</title>
+  Welcome to contact sync page
   </head>
   <body>
-  <p style="font-family: Comic Sans MS"> Hey! You can sync your contacts here, just click this button.</p>
-    <form action="main_page.php">
-      <button>Authorize</button>
+  <p>Welcome to the contact sync page of 180th Scouts group. By accepting the terms and conditions you allow <br>
+  the pccrovers.com to access your gmail account and make changes in the contact list of your account.</p>
+  <div>
+    <a href="http://www.pccrovers.com" style="float: left">
+	 <button>I Do Not Agree</button>
+    </a>
+    <form action="main_page.php" style="float: left">
+      <button>I Agree</button>
     </form>
+  </div>	
   </body>
 </html>
 

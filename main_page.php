@@ -13,8 +13,7 @@ $client->addScope('https://www.google.com/m8/feeds/');
 if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
   $client->setAccessToken($_SESSION['access_token']);
   
-$groupId = ContactFactory::createGroup("Salsa");
-//echo $groupId;
+$groupId = ContactFactory::createGroup("Imported " . date("Y-m-d"));
 
 //open a connection to the local sql database 'rovers', signing in as root user with no password 
 $mysqli = new mysqli('localhost', 'root', '','rovers');
@@ -27,18 +26,9 @@ if ($mysqli->connect_error) {
 $sql="SELECT * FROM `hasme` ORDER BY Name"; //make sure you change `hasme` to the name of your sql table 
 $result=mysqli_query($mysqli,$sql);
 	
-while($row = mysqli_fetch_array($result, MYSQLI_ASSOC)){
-	$name = $row["Name"];
-	$phoneNumber = $row["Phone 1 - Value"];
-	$email = $row["E-mail 1 - Value"];
-	
-	if($name && $phoneNumber && $email){
-	//create a new contact for each row in the database
-	ContactFactory::create($name, $phoneNumber, $email, $groupId); 
-	}
-	echo $name . "'s account was created. <br/><br/>";
-	//unset($name); unset($phoneNumber); unset($email);
-}
+//return all contacts as an array, pass that array to batch create function
+$contactsArray = mysqli_fetch_all($result, MYSQLI_ASSOC);
+$numCreated = ContactFactory::batchCreate($contactsArray, $groupId);
 
 // Free result set
 mysqli_free_result($result);
@@ -46,7 +36,10 @@ mysqli_free_result($result);
 //close connection
 mysqli_close($mysqli);
 
-
+//confirm contact creation and link to user's contacts page 
+echo $numCreated . " contacts were successfully created. <br/>";
+echo "Click <a href='http://contacts.google.com'>here</a> to check your contacts. <br/>";
+  
 }else {
   $redirect_uri = 'http://' . $_SERVER['HTTP_HOST'] . '/google_people/redirect.php';
   header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
